@@ -3,7 +3,7 @@
 A workflow to predict and simulate 15N-1H OS-ssNMR SLF spectra from MD trajectories.
 
 <figure>
-	<img src="doc/simulated_gpcr_slf.jpg" width="500">
+	<img src="doc/simulated_gpcr_slf.jpg" width="1000">
 	  <figcaption>Figure: 600 MHz SLF spectrum of a GPCR (PDB 3P0G) calculated from a 150 ns molecular dynamics trajectory. Line widths of 100 Hz are used in both dimensions. </figcaption>
 </figure>
 
