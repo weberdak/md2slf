@@ -4,6 +4,8 @@ import nmrglue as ng
 import numpy as np
 import argparse
 
+# Written by: Daniel K. Weber, University of Minnesota, MN, USA
+# Script has been adapted from NMRGlue documentation.
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Simulate 15N-1H SLF spectrum from SPARKY peak list file.',

@@ -7,8 +7,8 @@
 # coupling are scaled by a backbone order parameter, a user-defined order parameter and a user-defined flip angle.
 #
 # Written by: Daniel K. Weber
-# Affiliation: Gianluigi Veglia Lab; University of Minnesota, MN, USA
-# Funding sources: NIH R01GM064742 and NIH R01HL144130 (GV). AHA 19POST34420009 (DW).
+# Affiliation: University of Minnesota, MN, USA
+# Funding sources: NIH R01GM064742 and NIH R01HL144130 (Gianluigi Veglia). AHA 19POST34420009 (DW).
 #
 # Original date: Apr 21 2019
 # Last revision: Apr 29 2019

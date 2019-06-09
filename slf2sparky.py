@@ -2,6 +2,8 @@ import numpy as np
 import argparse
 
 
+# Written by: Daniel K. Weber, University of Minnesota, MN, USA
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Convert outputs of slf.tcl to SPARKY peak list.',
                                      formatter_class=argparse.RawTextHelpFormatter)
