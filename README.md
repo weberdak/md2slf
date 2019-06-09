@@ -1,6 +1,6 @@
 # md2slf
 
-A workflow to predict and simulate 15N-1H OS-ssNMR SLF spectra from MD simulations.
+A workflow to predict and simulate 15N-1H OS-ssNMR SLF spectra from MD trajectories.
 
 
 ## Overview
@@ -9,24 +9,69 @@ A method and assortment of scripts to generate SLF spectra in SPARKY format from
 
 1. Simulate a membrane protein of interest with any simulation package.
 
-2. Load trajectory into VMD and run the slf.tcl script to compute 15N chemical shifts and 15N-1H dipolar couplings.
+2. Load trajectory into VMD and run the [slf.tcl](slf.tcl) script to compute 15N chemical shifts and 15N-1H dipolar couplings.
 
-3. Convert the output of slf.tcl to SPARKY peak list format using the slf2sparky.py script.
+3. Convert the output of [slf.tcl](slf.tcl) to SPARKY peak list format using the [slf2sparky.py](slf2sparky.py) script.
 
-4. Simulate a 15N-1H SLF spectrum in SPARKY format from the peak list file using the simulate_slf.py script with desired line widths and field strength (requires NMRGlue).
+4. Simulate a 15N-1H SLF spectrum in SPARKY format from the peak list file using the [simulate_slf.py](simulate_slf.py) script with desired line widths and field strength (requires [NMRGlue](https://www.nmrglue.com/)).
 
-The simulated spectrum can then be loaded into SPARKY with the corresponding peak list file. Overlays with experimental spectra can  be used to aid assignments.
+The simulated spectrum can then be loaded into [SPARKY](https://nmrfam.wisc.edu/nmrfam-sparky-distribution/) with the corresponding peak list file. Overlays with experimental spectra can  be used to aid assignments.
 
-## Quickguide
+## Quickstart guide
 
-Load peak list using "rp" command.
+1. Copy the [slf.tcl](slf.tcl) into working directory and load simulation trajectory into VMD. I.e.,  from UNIX terminal:
 
+		vmd simulation.psf simulation.dcd
+
+2. Open "Extensions -> Tk Console"
+
+3. Select all protein residues. Proline and terminal residues will be filtered out by the script. In the Tk Console:
+
+		source slf.tcl
+		set s [atomselect top "all protein"]
+		slf $s -start 2500 -out slf_50-200ns
+
+	This command will measure from frame 2500 until the end of the 	trajectory (10000). In this example, each frame equates to 0.02 ns. The first 50 ns of non-equilibrated trajectory is discarded from the analysis. A file named slf_50-200ns.dat will be created and contains five columns: 1. residue three-letter name, 2. residue number,  3. 15N chemical shift, 4. dipolar couping and 5. NH order parameter with respect to Z-axis used to scale down values.
+
+	A more advanced example is:
+
+		slf $s -start 2500 -step 2 -stop 7500 -flip 90.0 -ord 0.8 -out slf_50-200ns_unflipped
+
+	This will calculate values from frame 2500 to 7500, skipping every second frame. Value will be tranformed with membrane normal perpendicular to the Z-axis (i.e., an unflipped bicelle). A global order parameter of 0.8 is also applied, which could account for fluctuation in the experimental alignment axis and/or rigid body fluctuation about the helical tilt axis.
+		
+4. Convert the slf.tcl output to SPARKY peak list format using the [slf2sparky.py](slf2sparky.py) script:
+
+		python slf2sparky.py -i slf_50-200ns.dat -o slf_50-200ns.list -n
+
+	Note that the "-n" flag is used to convert dipolar couplings to negative values, which are more natural to visualize in SPARKY.
+	
+5. Simulate an SLF spectrum from the peak list file using the [simulate_slf.py](simulate_slf.py) script. This requires the [NMRGlue](https://www.nmrglue.com/) library to be installed into Python 3.X.
+
+		python simulate_slf.py \
+       		-i slf_50-200ns.dat.list \
+       		-o slf_50-200ns.ucsf \
+       		--sw_n 20000.0 \
+       		--sw_nh 31250.0 \
+       		--size_n 2048 \
+       		--size_nh 1024 \
+       		--lw_n 100.0 \
+       		--lw_nh 100.0 \
+       		--freq_n 60.7639142 \
+       		--carr_n 5600.0
+
+	These are the default settings of the script, which specify a 15N spectral width of 20 kHz with 2048 points; a 15N-1H dipolar coupling spectral width of 31.25 kHz with 1024 points; linewidths of 100 Hz in both dimensions; 15N frequency of 60.7639142 MHz (i.e., from a 600 MHz spectrometer) and the carrier offset frequency set at 5600 Hz.
+
+6. Load the spectrum into SPARKY:
+
+		sparky slf_50-200ns.ucsf
+
+7. Load the peak list file (slf_50-200ns.list; step 4) using the "rp" command.
 
 ## Development
  
  The following are on the to-do list:
 
-* Support for predicting side chains peaks.
+* Support for predicting side chain peaks.
 * Scripts to transform slf.tcl outputs with user-defined vaues of local order parameters (i.e., from relaxation data) and trialling alternative flip angles without having to repeat the entire analysis.
 
 ## Limitations
