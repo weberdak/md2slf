@@ -3,7 +3,7 @@
 # Calculates a 15N-1H Separated Local Field (SLF) spectrum from a molecular dynamics simulation or PDB file.
 # Chemical shifts are computed by projecting the 15N shift tensor onto the peptide plane. The average orientation
 # of the shift tensor components over the trajectory is then used to calculate the chemical shift. 15N-1H dipolar
-# coupling is found the same way, but using the averaged orientation of the N-H bond vector. Both shifts and dipolar
+# couplings are found the same way, but using the average orientation of the N-H bond vector. Both shifts and dipolar
 # coupling are scaled by a backbone order parameter, a user-defined order parameter and a user-defined flip angle.
 #
 # Written by: Daniel K. Weber
@@ -11,7 +11,7 @@
 # Funding sources: NIH R01GM064742 and NIH R01HL144130 (Gianluigi Veglia). AHA 19POST34420009 (DW).
 #
 # Original date: Apr 21 2019
-# Last revision: Apr 29 2019
+# Last revision: June 30 2019
 #
 # Basic usage
 # -----------
@@ -24,9 +24,9 @@
 # Full usage
 # ----------
 # As above but using optional flags.
-# > slf $p -mol 1 -start 1000 -stop 5000 -step 10 -out mysystem -ord 0.9 -flip 90.0
-# Will run for molecule 1. Starts frame 1000 and end frame 5000, for every 10th frame.
-# Outputs files: mysystem.dat. An additional order parameter of 0.9 will be applied.
+# > slf $p -mol 1 -start 1000 -stop 5000 -step 10 -out mysystem.dat -ord 0.9 -flip 90.0
+# Will run for molecule 1. Starts at frame 1000 and ends frame 5000, for every 10th frame.
+# Outputs file mysystem.dat. An additional order parameter of 0.9 will be applied.
 # Chemical shifts and dipolar couplings will transformed as if the system were aligned
 # perpendicular to the magnetic field (i.e., an unflipped bicelle).
 
@@ -57,25 +57,35 @@ proc slf { selection { args } } {
     #       Output file prefix. Default: slf.
     # -draw <switch>.
     #    <switch>: 0 (off) or 1 (on)
-    #       Draw 1H-15N bond vector and 15N chemical shift PAS. Not recommended for trajectory.
+    #       Draw 1H-15N bond vector and 15N chemical shift PAS. Not recommended for trajectory. Default: 0.
     # -flip <angle>
     #    <angle>: float
     #       Flip angle in degrees. I.e., use 90.0 for unflipped bicelle. Default: 0.0.
     # -ord <order parameter>
     #    <order parameter>: float
     #       Addtional order parameter to apply on chemical shifts and dipolar couplings. Default: 1.0.
+    # -pas <dxx> <dyy> <dzz>
+    #    <dxx>: float
+    #       Smallest component of 15N chemical shift PAS in PPM. Default: 57.3.
+    #    <dyy>: float
+    #       Middle component. Default: 81.2.
+    #    <dzz>: float
+    #       Largest component. Default: 228.1.
+    # -dc <coupling constant>
+    #    <coupling constant>: float
+    #       Dipolar coupling constant in kHz. Default: 10.735.
     #
     # Outputs
     # -------
-    # <prefix>.dat: ASCII data file
-    #    Residue name, residue number, 15N chemical shift, 15N-1H dipolar coupling, order parameter.
+    # <prefix>: ASCII data file
+    #    Residue name, residue number, 15N chemical shift, 15N-1H dipolar coupling and order parameter.
 
     # Handle args
     set mol [argparse $args "-mol" 1 top]
     set start [argparse $args "-start" 1 0]
     set stop [argparse $args "-stop" 1 [molinfo $mol get numframes]]
     set step [argparse $args "-step" 1 1]
-    set out [argparse $args "-out" 1 "slf"]
+    set out [argparse $args "-out" 1 "slf.dat"]
     set drawflag [argparse $args "-draw" 1 "null"]
     set flip [argparse $args "-flip" 1 0.0]
     set ord [argparse $args "-ord" 1 1.0]
@@ -83,14 +93,13 @@ proc slf { selection { args } } {
     set dyy [argparse $args "-pas" 2 81.2]
     set dzz [argparse $args "-pas" 3 228.1]
     set beta [argparse $args "-beta" 1 17.0]
+    set b [argparse $args "-dc" 1 10.735]
 
     set beta [expr $beta*-1]
-    set b 10.735
-    
     set B0 {0 0 1}
     set iso [expr {($dzz+$dyy+$dxx)/3}]
     set flip [expr {$flip*0.017453}]
-    set outf [open "$out.dat" w]
+    set outf [open $out w]
 
     # Filter selection for protein residues
     puts "Finding amides..."
@@ -148,7 +157,6 @@ proc slf { selection { args } } {
 	    set xx [veccross $zz $yy]
 
 	    # Adjust PAS for beta rotation about syy
-	    #set rotation [ transabout $yy -19.6 deg ]
 	    set rotation [ transabout $yy $beta deg ]
 	    set xx [vectrans $rotation $xx]
 	    set zz [vectrans $rotation $zz]
@@ -330,15 +338,8 @@ proc vecorder { vectors vectors_average } {
 	set vnorm_v_xy [vecnorm [list [lindex $vnorm_v 0] [lindex $vnorm_v 1]]]
 	set rotation [transabout {0 0 1} [expr -acos([lindex $vnorm_v_xy 0])] rad ]
 	set vnorm_v [vectrans $rotation $vnorm_v]
-	
-	# Assign x and y components of avg vec to currect vec so only z axis is considered.
-	#set vnorm_v [list [lindex $vnorm_a 0] [lindex $vnorm_a 1] [lindex $vnorm_v 2]]
 	set tmp [ expr {(3*([vecdot $vnorm_v $vnorm_a]**2)-1)/2}]
 	set csum [ expr {$csum + $tmp}]
     }
-
-    #puts "$vnorm_v $vnorm_a"
-    #puts [veclength $vnorm_v]
-    
     return [expr {$csum/$num}]
 }

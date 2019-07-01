@@ -33,13 +33,13 @@ The simulated spectrum can then be loaded into [NMRFAM-Sparky](https://nmrfam.wi
 
 		source slf.tcl
 		set s [atomselect top "all protein"]
-		slf $s -start 2500 -out slf_50-200ns
+		slf $s -start 2500 -out slf_50-200ns.dat
 
 	This command will utilize each frame from 2500 until the end of the trajectory (10000 in this case). In this example, each frame equates to a timestep of 0.02 ns. The first 50 ns of non-equilibrated trajectory is discarded from the analysis. A file named slf_50-200ns.dat will be created and contains five columns: 1. residue three-letter code, 2. residue number,  3. <sup>15</sup>N chemical shift, 4. <sup>15</sup>N-<sup>1</sup>H dipolar couping and 5. N-H order parameter with respect to Z-axis.
 
 	A more advanced example is:
 
-		slf $s -start 2500 -step 2 -stop 7500 -flip 90.0 -ord 0.8 -out slf_50-200ns_unflipped
+		slf $s -start 2500 -step 2 -stop 7500 -flip 90.0 -ord 0.8 -out slf_50-200ns_unflipped.dat
 
 	This will average from frame 2500 to 7500, skipping every second frame. Values will be tranformed with membrane normal perpendicular to the Z-axis (i.e., an unflipped bicelle). A global order parameter of 0.8 is also applied, which could account for fluctuation in the experimental alignment axis and/or rigid body fluctuation about the helical tilt axis of the protein.
 		
