@@ -21,9 +21,15 @@ This repository contains an assortment of scripts to predict a [<sup>15</sup>N-<
 
 The simulated spectrum can then be loaded into [NMRFAM-Sparky](https://nmrfam.wisc.edu/nmrfam-sparky-distribution/) with the corresponding peak list file. Overlays with experimental spectra can be used to aid assignments.
 
+## Citation and Funding
+
+Currently under review.
+
+This work was partially funded by the National Institutes of Health (GM64742 and HL144130 to Gianluigi Veglia) and the American Heart Association (19POST34420009 to Daniel Weber).
+
 ## Quickstart guide
 
-1. Copy the [slf.tcl](slf.tcl) script into the working directory and load simulation trajectory into VMD. For example, in a UNIX terminal, load a CHARMM/NAMD trajectory by:
+1. Copy the [slf.tcl](slf.tcl) script into the working directory and load simulation trajectory into VMD. For example, in a UNIX terminal load a CHARMM/NAMD trajectory by:
 
 		vmd simulation.psf simulation.dcd
 
