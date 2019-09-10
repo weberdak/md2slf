@@ -20,6 +20,10 @@ def parse_args():
         help='Convert to negative dipolar couplings.',
         action='store_true'
     )
+    parser.add_argument(
+        '-r', '--renumber', type=int,
+        help='Add this number to shift residue numbers.',
+    )
     args = parser.parse_args()
     return args
     
@@ -30,7 +34,8 @@ def main():
     f = args.infile
     fo = open(args.outfile, 'w')
     fo.write('      Assignment         w1         w2  \n\n')
-
+    shift = args.renumber
+    
     resnames = np.genfromtxt(f,usecols=(0),dtype=str)
     resids = np.genfromtxt(f,usecols=(1),dtype=int)
     shifts = np.genfromtxt(f,usecols=(2),dtype=float)
@@ -70,7 +75,7 @@ def main():
         if args.negative:
             dc = abs(dc)*-1
         
-        assignment = conversion[resname]+str(resid)+'H-N'
+        assignment = conversion[resname]+str(resid+shift)+'H-N'
         assignment = assignment.rjust(17)
         dc = str(dc)
         dc = dc.rjust(11,' ')
