@@ -11,7 +11,7 @@
 # Funding sources: NIH R01GM064742 and NIH R01HL144130 (Gianluigi Veglia). AHA 19POST34420009 (DW).
 #
 # Original date: Apr 21 2019
-# Last revision: June 30 2019
+# Last revision: Sep 10 2019
 #
 # Basic usage
 # -----------
@@ -117,6 +117,7 @@ proc slf { selection { args } } {
 	if { $num == 4 } {
 	    lappend presids $resid
 	}
+	#puts "$resid: $atoms($resid)"
 	$temp1 delete
 	$temp2 delete
 	unset temp1 temp2
@@ -176,6 +177,7 @@ proc slf { selection { args } } {
 	    lappend yy_list $yy
 	    lappend zz_list $zz
 	}
+	
 	# Compute normalised average coodinates and order parameter of 15N CS tensor components and dipolar coupling vectors for residue
 	set xx_mean [vecnorm [vecaverage $xx_list]]
 	set yy_mean [vecnorm [vecaverage $yy_list]]
@@ -189,12 +191,12 @@ proc slf { selection { args } } {
 	set csxx [expr {$dxx*([vecdot $B0 $xx_mean])**2}]
 	set cs [expr {$cszz+$csyy+$csxx}]
 	set cs [format "%.2f" [expr {($cs-$iso)*$ord*$mu_ord*0.5*(3*(cos($flip)**2)-1)+$iso}]]	
-
+	
 	# Compute absolute dipolar coupling 
 	set dc [expr {($b/2)*(3*(([vecdot $B0 $mu_mean])**2)-1)}]
 	set dc [expr {$dc*$ord*$mu_ord*0.5*(3*(cos($flip)**2)-1)}]
 	set dc [format "%.2f" [expr abs($dc)]]
-
+	
 	# Formatting
 	set mu_ord [format "%.2f" $mu_ord]
 	
@@ -320,7 +322,7 @@ proc vecorder { vectors vectors_average } {
     # order: float
     #    Order parameter of vectors with respect to average vector (Z-axis).
 
-    set num [llength $vectors]
+    #set num [llength $vectors]
 
     # Get normalized average vector and align along X
     set vnorm_a [vecnorm $vectors_average]
@@ -330,16 +332,25 @@ proc vecorder { vectors vectors_average } {
     set vnorm_a [vectrans $rotation $vnorm_a]
     
     set csum 0
+    set num 0
     foreach vector $vectors {
 
 	# Normalize vector and align along X
-	set vnorm_v [vecnorm $vector]
-	set vnorm_v [list [expr abs([lindex $vnorm_v 0])] [expr abs([lindex $vnorm_v 1])] [lindex $vnorm_v 2]]
-	set vnorm_v_xy [vecnorm [list [lindex $vnorm_v 0] [lindex $vnorm_v 1]]]
-	set rotation [transabout {0 0 1} [expr -acos([lindex $vnorm_v_xy 0])] rad ]
-	set vnorm_v [vectrans $rotation $vnorm_v]
-	set tmp [ expr {(3*([vecdot $vnorm_v $vnorm_a]**2)-1)/2}]
-	set csum [ expr {$csum + $tmp}]
+	# Skip bug that crashes analysis where vector is pefectly aligned with Z-axis. 
+	if { [catch {
+	    set vnorm_v [vecnorm $vector]
+	    set vnorm_v [list [expr abs([lindex $vnorm_v 0])] [expr abs([lindex $vnorm_v 1])] [lindex $vnorm_v 2]]
+	    set vnorm_v_xy [vecnorm [list [lindex $vnorm_v 0] [lindex $vnorm_v 1]]]
+	    set rotation [transabout {0 0 1} [expr -acos([lindex $vnorm_v_xy 0])] rad ]
+	    set vnorm_v [vectrans $rotation $vnorm_v]
+	    set tmp [ expr {(3*([vecdot $vnorm_v $vnorm_a]**2)-1)/2}]
+	    set csum [ expr {$csum + $tmp}]
+	    incr num
+	}
+	     ]
+	 } {
+	    puts "WARNING! Vector $num will be skipped in order parameter calculation."
+	}
     }
     return [expr {$csum/$num}]
 }
