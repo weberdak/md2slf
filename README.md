@@ -23,7 +23,7 @@ The simulated spectrum can then be loaded into [NMRFAM-Sparky](https://nmrfam.wi
 
 ## Citation and Funding
 
-Currently under review.
+Weber, D.K., Veglia, G. (2019). A Theoretical Assessment of the Structure Determination of Multi-Span Membrane Proteins by Oriented Sample Solid-State NMR Spectroscopy, *Aust. J. Chem.*, [DOI: 10.1071/CH19307](https://doi.org/10.1071/CH19307).
 
 This work was partially funded by the National Institutes of Health (GM64742 and HL144130 to Gianluigi Veglia) and the American Heart Association (19POST34420009 to Daniel Weber).
 
