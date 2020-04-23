@@ -11,7 +11,7 @@
 # Funding sources: NIH R01GM064742 and NIH R01HL144130 (Gianluigi Veglia). AHA 19POST34420009 (DW).
 #
 # Original date: Apr 21 2019
-# Last revision: Sep 10 2019
+# Last revision: Apr 22 2020 (no output results without scaling by order parameters)
 #
 # Basic usage
 # -----------
@@ -123,7 +123,7 @@ proc slf { selection { args } } {
 	unset temp1 temp2
     }
     puts "Found [llength $presids] residues!"
-    puts "#resname\tresnum\tCS\tDC\tS"
+    puts "#resname\tresnum\tCS\tDC\tS\tCS_f\tDC_f"
     
     # Loop through each residue
     foreach resid $presids {
@@ -189,20 +189,23 @@ proc slf { selection { args } } {
 	set cszz [expr {$dzz*([vecdot $B0 $zz_mean])**2}]
 	set csyy [expr {$dyy*([vecdot $B0 $yy_mean])**2}]
 	set csxx [expr {$dxx*([vecdot $B0 $xx_mean])**2}]
-	set cs [expr {$cszz+$csyy+$csxx}]
-	set cs [format "%.2f" [expr {($cs-$iso)*$ord*$mu_ord*0.5*(3*(cos($flip)**2)-1)+$iso}]]	
+	set cs1 [expr {$cszz+$csyy+$csxx}]
+	set cs [format "%.2f" [expr {($cs1-$iso)*$ord*$mu_ord*0.5*(3*(cos($flip)**2)-1)+$iso}]]
+	set csf [format "%.2f" [expr {($cs1-$iso)*$ord*0.5*(3*(cos($flip)**2)-1)+$iso}]]
 	
 	# Compute absolute dipolar coupling 
-	set dc [expr {($b/2)*(3*(([vecdot $B0 $mu_mean])**2)-1)}]
-	set dc [expr {$dc*$ord*$mu_ord*0.5*(3*(cos($flip)**2)-1)}]
+	set dc1 [expr {($b/2)*(3*(([vecdot $B0 $mu_mean])**2)-1)}]
+	set dc [expr {$dc1*$ord*$mu_ord*0.5*(3*(cos($flip)**2)-1)}]
 	set dc [format "%.2f" [expr abs($dc)]]
+	set dcf [expr {$dc1*$ord*0.5*(3*(cos($flip)**2)-1)}]
+	set dcf [format "%.2f" [expr abs($dcf)]]
 	
 	# Formatting
 	set mu_ord [format "%.2f" $mu_ord]
 	
 	# Output to file
-	puts "$resname\t$resid\t$cs\t$dc\t$mu_ord"
-	puts $outf "$resname\t$resid\t$cs\t$dc\t$mu_ord"
+	puts "$resname\t$resid\t$cs\t$dc\t$mu_ord\t$csf\t$dcf"
+	puts $outf "$resname\t$resid\t$cs\t$dc\t$mu_ord\t$csf\t$dcf"
 	
 	# Clean up
 	$N delete
