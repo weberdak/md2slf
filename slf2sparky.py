@@ -21,8 +21,8 @@ def parse_args():
         action='store_true'
     )
     parser.add_argument(
-        '-r', '--renumber', type=int,
-        help='Add this number to shift residue numbers.',
+        '-r', '--renumber', type=int, default=0,
+        help='Add this value to all residue numbers.',
     )
     args = parser.parse_args()
     return args
